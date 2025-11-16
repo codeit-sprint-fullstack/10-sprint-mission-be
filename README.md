@@ -1,3 +1,101 @@
+중고마켓 백엔드 (Express + Prisma + MongoDB)
+============================================
+
+요구사항
+-------
+- Product 스키마: id, name, description, price, tags, createdAt, updatedAt (+ 필요 시 확장)
+- 상품 등록/상세/수정(PATCH)/삭제/목록 API
+- 목록: offset 페이지네이션, 최신순(recent) 정렬, name/description 검색
+- 적절한 에러 처리와 HTTP 상태 코드
+- .env 환경 변수, CORS 설정
+- Render 배포
+- Prisma + MongoDB + Express
+
+로컬 실행
+--------
+1) 의존성 설치
+
+```bash
+npm ci
+npx prisma generate
+```
+
+2) 환경 변수 설정
+- `env.example`를 복사해 `.env` 생성 후 값 채우기
+
+```bash
+cp env.example .env
+```
+
+3) 서버 실행
+
+```bash
+npm run start
+# 또는 개발 모드
+npm run dev
+```
+
+환경 변수
+--------
+- `DATABASE_URL`: MongoDB 연결 문자열 (예: `mongodb+srv://USER:PASS@HOST/DB?retryWrites=true&w=majority`)
+- `PORT`: 서버 포트 (기본: 3000)
+
+API 개요
+-------
+- 기본 URL: `/api/products`
+
+1) 상품 등록
+   - `POST /api/products`
+   - body: `{ name, description, price, tags }`
+   - 201 Created 반환, 생성된 상품 상세
+
+2) 상품 상세 조회
+   - `GET /api/products/:id`
+   - 200 OK, `{ id, name, description, price, tags, createdAt }`
+
+3) 상품 수정 (PATCH)
+   - `PATCH /api/products/:id`
+   - body: 일부 혹은 전체 `{ name?, description?, price?, tags? }`
+   - 200 OK
+
+4) 상품 삭제
+   - `DELETE /api/products/:id`
+   - 204 No Content
+
+5) 상품 목록 조회
+   - `GET /api/products?offset=0&limit=10&sort=recent&q=word`
+   - 200 OK, `{ items: [...], pagination: { offset, limit, total, hasMore } }`
+   - item 필드: `{ id, name, price, createdAt }`
+
+에러 처리
+--------
+- 400: 잘못된 요청(유효성 실패 등)
+- 404: 자원 없음
+- 500: 서버 오류
+
+CORS
+----
+- `*` 오리진 허용 (필요 시 도메인 제한으로 변경 권장)
+
+배포(Render)
+------------
+1) GitHub에 저장소 푸시
+2) Render 대시보드에서 New → Web Service
+3) 리전/플랜 선택 후
+   - Build Command: `npm ci && npx prisma generate`
+   - Start Command: `node src/server.js`
+4) Environment Variables에 `DATABASE_URL`, `PORT`(Render 기본 포트 사용 시 생략 가능) 설정
+5) 배포 완료 후 제공된 URL로 접속
+
+참고
+----
+- Prisma MongoDB 모델: `prisma/schema.prisma`
+- 서버 진입점: `src/server.js`, 앱 구성: `src/app.js`
+- 라우트: `src/routes/products.js`
+- 컨트롤러: `src/controllers/productsController.js`
+- 에러/미들웨어: `src/middlewares/errorHandler.js`
+- 직렬화 유틸: `src/utils/serializers.js`
+
 # 🐼 판다마켓 프로젝트
 
 > _이 저장소는 판다마켓 프로젝트의 백엔드 코드를 관리하는 곳입니다. 프로젝트를 클론하여 개발 환경을 설정하고, 각 브랜치에서 해당 스프린트 미션을 수행해 주세요!_ 🛠️

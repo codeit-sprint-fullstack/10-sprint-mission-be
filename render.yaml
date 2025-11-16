@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: second-hand-market-be
+    env: node
+    plan: free
+    buildCommand: |
+      npm ci
+      npx prisma generate
+    startCommand: node src/server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 18
+      - key: DATABASE_URL
+        sync: false
+      - key: PORT
+        value: 10000
+
+
