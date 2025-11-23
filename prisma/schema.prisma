@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 중고마켓 상품 (Product): 중고 마켓에 판매되는 상품 데이터 저장
+model Product {
+  id            Int       @id @default(autoincrement()) // 상품의 고유 식별자 (기본 키)
+  name          String    // 상품명
+  description   String    // 상품 상세 설명
+  price         Int       // 상품 가격
+  tags          String[]  @default([]) // 상품 관련 태그 목록
+  createdAt     DateTime  @default(now()) // 상품 등록일시
+  updatedAt     DateTime  @updatedAt // 상품 정보 최종 수정일시
+
+  // 관계: MarketComment와 일대다 관계
+  marketComments MarketComment[] // 중고마켓 댓글들
+}
+
+// 자유게시판 게시글 (Article): 자유 게시판에 작성된 게시글 데이터 저장
+model Article {
+  id              Int       @id @default(autoincrement()) // 게시글의 고유 식별자 (기본 키)
+  title           String    // 게시글 제목
+  content         String    // 게시글 내용
+  createdAt       DateTime  @default(now()) // 게시글 작성일시
+  updatedAt       DateTime  @updatedAt // 게시글 최종 수정일시
+
+  // 관계: ArticleComment와 일대다 관계
+  articleComments ArticleComment[] // 게시글 댓글들
+}
+
+// 중고마켓 댓글 (MarketComment): 중고마켓 상품에 달린 댓글 데이터 저장
+model MarketComment {
+  id        Int       @id @default(autoincrement()) // 댓글의 고유 식별자 (기본 키)
+  content   String    // 댓글 내용
+  createdAt DateTime  @default(now()) // 댓글 작성일시
+
+  // onDelete: Cascade - Product가 삭제되면 댓글도 삭제
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId Int
+}
+
+// 자유게시판 댓글 (ArticleComment): 자유게시판 게시글에 달린 댓글 데이터 저장
+model ArticleComment {
+  id        Int       @id @default(autoincrement()) // 댓글의 고유 식별자 (기본 키)
+  content   String    // 댓글 내용
+  createdAt DateTime  @default(now()) // 댓글 작성일시
+
+  // onDelete: Cascade - Article이 삭제되면 댓글도 삭제
+  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId Int
+}
