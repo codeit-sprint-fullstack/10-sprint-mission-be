@@ -2,6 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import productRoutes from './routes/productRoutes.js';
+import articleRoutes from './routes/articleRoutes.js';
+import commentRoutes from './routes/commentRoutes.js';
 import { errorHandler } from './middlewares/errorHandler.js';
 import { connectDatabase } from './config/database.js';
 
@@ -35,18 +37,20 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api', productRoutes);
+app.use('/products', productRoutes);
+app.use('/articles', articleRoutes);
+app.use('/comments', commentRoutes);
 
 app.get('/', (req, res) => {
-  res.json({
+  res.send({
     success: true,
     message: 'PandaMarket API 서버가 실행 중입니다.',
   });
 });
 
 app.use((req, res) => {
-  res.status(404).json({
-    success: false,
+  res.status(404).send({
+    name: 'NotFound',
     message: '요청한 리소스를 찾을 수 없습니다.',
   });
 });

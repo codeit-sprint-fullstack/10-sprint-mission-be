@@ -1,50 +1,43 @@
-export class Product {
-  _name;
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/database.js';
 
-  _description;
-
-  _price;
-
-  _tags;
-
-  _images;
-
-  _favoriteCount;
-
-  constructor(name, description, price, tags, images, favoriteCount) {
-    this._name = name;
-    this._description = description;
-    this._price = price;
-    this._tags = Array.from(tags); 
-    this._images = Array.from(images);
-    this._favoriteCount = favoriteCount;
-  }
-
-  getName() {
-    return this._name;
-  }
-
-  getDescription() {
-    return this._description;
-  }
-
-  getPrice() {
-    return this._price;
-  }
-
-  getTags() {
-    return Array.from(this._tags); 
-  }
-
-  getImages() {
-    return Array.from(this._images);
-  }
-
-  getFavoriteCount() {
-    return this._favoriteCount;
-  }
-
-  favorite() {
-    this._favoriteCount++;
-  }
-}
+export const Product = sequelize.define(
+  'Product',
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    name: {
+      type: DataTypes.STRING(200),
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    price: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+    },
+    tags: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: [],
+    },
+    images: {
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      allowNull: false,
+      defaultValue: [],
+    },
+  },
+  {
+    tableName: 'products',
+    timestamps: true,
+    underscored: true,
+  },
+);

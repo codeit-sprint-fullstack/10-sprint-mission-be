@@ -1,26 +1,31 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../config/database.js';
 
-export const Article = sequelize.define(
-  'Article',
+export const Comment = sequelize.define(
+  'Comment',
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    title: {
-      type: DataTypes.STRING(200),
-      allowNull: false,
-    },
     content: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
+    productId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    articleId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   },
   {
-    tableName: 'articles',
+    tableName: 'comments',
     timestamps: true,
     underscored: true,
   },
 );
+
