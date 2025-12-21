@@ -4,6 +4,7 @@ dotenv.config();
 
 import express from "express";
 import articlesRouter from "./routes/articles.js";
+import productsRouter from "./routes/products.js";
 import articleCommentsRouter from "./routes/articleComments.js";
 import marketCommentsRouter from "./routes/marketComments.js";
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // 라우터 연결
 app.use("/articles", articlesRouter);
+app.use("/products", productsRouter);
 app.use("/", articleCommentsRouter); // /articles/:articleId/comments, /article-comments/:id
 app.use("/", marketCommentsRouter); // /products/:productId/comments, /market-comments/:id
 
@@ -28,7 +30,7 @@ app.use((err, req, res, next) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
     console.log(`Server listening on port ${PORT}`);
 });

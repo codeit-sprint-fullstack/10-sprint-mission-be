@@ -20,13 +20,17 @@ model Product {
 }
 
 model Article {
-  id              Int       @id @default(autoincrement()) 
-  title           String    
-  content         String    
-  createdAt       DateTime  @default(now()) 
-  updatedAt       DateTime  @updatedAt 
+  id              Int       @id @default(autoincrement())
+  title           String
+  content         String
 
-  articleComments ArticleComment[] 
+  user            String    // ✅ 추가 (작성자)
+  likeCount       Int       @default(0) // ✅ 추가 (좋아요 수)
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  articleComments ArticleComment[]
 }
 
 model MarketComment {
@@ -41,6 +45,7 @@ model MarketComment {
 model ArticleComment {
   id        Int       @id @default(autoincrement()) 
   content   String    
+  user      String    @default("") // 댓글 작성자
   createdAt DateTime  @default(now()) 
 
   article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)

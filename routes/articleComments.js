@@ -1,6 +1,6 @@
 // routes/articleComments.js
 import express from "express";
-import prisma from "../prisma.js";
+import prisma from "../prismaClient.js";
 
 const router = express.Router();
 
@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/articles/:articleId/comments", async (req, res, next) => {
     try {
         const articleId = Number(req.params.articleId);
-        const { content } = req.body;
+        const { content, user } = req.body;
 
         if (Number.isNaN(articleId)) {
             return res
@@ -17,6 +17,9 @@ router.post("/articles/:articleId/comments", async (req, res, next) => {
         }
         if (!content) {
             return res.status(400).send({ message: "content는 필수입니다." });
+        }
+        if (!user) {
+            return res.status(400).send({ message: "user는 필수입니다." });
         }
 
         const article = await prisma.article.findUnique({
@@ -31,6 +34,7 @@ router.post("/articles/:articleId/comments", async (req, res, next) => {
         const comment = await prisma.articleComment.create({
             data: {
                 content,
+                user,
                 articleId,
             },
         });
@@ -67,6 +71,7 @@ router.get("/articles/:articleId/comments", async (req, res, next) => {
             select: {
                 id: true,
                 content: true,
+                user: true,
                 createdAt: true,
             },
         };

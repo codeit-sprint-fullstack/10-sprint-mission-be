@@ -1,5 +1,4 @@
-import { PrismaClient } from "@prisma/client"; 
-
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -24,8 +23,9 @@ async function main() {
 
     const article1 = await prisma.article.create({
         data: {
-            title: "판다마켓 이용 규칙",
+            title: "맥북 16인치 16기가 1테라 정도 사양이면 얼마에 팔아야하나요?",
             content: "여기에 이용 규칙을 적습니다.",
+            user: "admin", // ✅ 필수
         },
     });
 
@@ -33,9 +33,9 @@ async function main() {
         data: {
             title: "거래 팁 모음",
             content: "사기 예방 팁을 공유합니다.",
+            user: "admin", // ✅ 필수
         },
     });
-
 
     await prisma.marketComment.create({
         data: {

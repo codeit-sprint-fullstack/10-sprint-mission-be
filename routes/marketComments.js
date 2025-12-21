@@ -1,6 +1,6 @@
 // routes/marketComments.js
 import express from "express";
-import prisma from "../prisma.js";
+import prisma from "../prismaClient.js";
 
 const router = express.Router();
 

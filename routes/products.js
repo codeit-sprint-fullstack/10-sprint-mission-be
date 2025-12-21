@@ -1,35 +1,48 @@
-// routes/articles.js
+// routes/products.js
 import express from "express";
 import prisma from "../prismaClient.js";
 
 const router = express.Router();
 
-/** 게시글 등록 */
+/** 상품 등록 */
 router.post("/", async (req, res, next) => {
     try {
-        const { title, content, user } = req.body;
+        const { name, description, price, tags } = req.body;
 
-        if (!title || !content || !user) {
-            return res
-                .status(400)
-                .send({ message: "title, content, user는 필수입니다." });
+        if (!name || !description || price === undefined) {
+            return res.status(400).send({
+                message: "name, description, price는 필수입니다.",
+            });
         }
 
-        const article = await prisma.article.create({
-            data: { 
-                title, 
-                content, 
-                user,
+        if (typeof price !== "number" || price < 0) {
+            return res.status(400).send({
+                message: "price는 0 이상의 숫자여야 합니다.",
+            });
+        }
+
+        if (tags && !Array.isArray(tags)) {
+            return res.status(400).send({
+                message: "tags는 배열이어야 합니다.",
+            });
+        }
+
+        const product = await prisma.product.create({
+            data: {
+                name,
+                description,
+                price,
+                tags: tags || [],
             },
         });
 
-        res.status(201).send(article);
+        res.status(201).send(product);
     } catch (err) {
         next(err);
     }
 });
 
-/** 게시글 목록 조회 (offset + 검색 + 최신순) */
+/** 상품 목록 조회 (offset + 검색 + 최신순) */
 router.get("/", async (req, res, next) => {
     try {
         const {
@@ -53,13 +66,13 @@ router.get("/", async (req, res, next) => {
                 ? {
                       OR: [
                           {
-                              title: {
+                              name: {
                                   contains: String(keyword),
                                   mode: "insensitive",
                               },
                           },
                           {
-                              content: {
+                              description: {
                                   contains: String(keyword),
                                   mode: "insensitive",
                               },
@@ -69,24 +82,22 @@ router.get("/", async (req, res, next) => {
                 : {};
 
         const orderBy =
-            order === "oldest" ? { createdAt: "asc" } : { createdAt: "desc" }; // recent(최신순) 또는 oldest(오래된순)
+            order === "recent" ? { createdAt: "desc" } : { createdAt: "desc" };
 
         const [items, totalCount] = await Promise.all([
-            prisma.article.findMany({
+            prisma.product.findMany({
                 where,
                 orderBy,
                 skip,
                 take,
                 select: {
                     id: true,
-                    title: true,
-                    content: true,
-                    user: true,
-                    likeCount: true,
+                    name: true,
+                    price: true,
                     createdAt: true,
                 },
             }),
-            prisma.article.count({ where }),
+            prisma.product.count({ where }),
         ]);
 
         res.send({
@@ -100,7 +111,7 @@ router.get("/", async (req, res, next) => {
     }
 });
 
-/** 게시글 단건 조회 */
+/** 상품 상세 조회 */
 router.get("/:id", async (req, res, next) => {
     try {
         const id = Number(req.params.id);
@@ -108,66 +119,82 @@ router.get("/:id", async (req, res, next) => {
             return res.status(400).send({ message: "id는 숫자여야 합니다." });
         }
 
-        const article = await prisma.article.findUnique({
+        const product = await prisma.product.findUnique({
             where: { id },
             select: {
                 id: true,
-                title: true,
-                content: true,
-                user: true,
-                likeCount: true,
+                name: true,
+                description: true,
+                price: true,
+                tags: true,
                 createdAt: true,
             },
         });
 
-        if (!article) {
+        if (!product) {
             return res
                 .status(404)
-                .send({ message: "게시글을 찾을 수 없습니다." });
+                .send({ message: "상품을 찾을 수 없습니다." });
         }
 
-        res.send(article);
+        res.send(product);
     } catch (err) {
         next(err);
     }
 });
 
-/** 게시글 수정 */
+/** 상품 수정 */
 router.patch("/:id", async (req, res, next) => {
     try {
         const id = Number(req.params.id);
-        const { title, content } = req.body;
+        const { name, description, price, tags } = req.body;
 
         if (Number.isNaN(id)) {
             return res.status(400).send({ message: "id는 숫자여야 합니다." });
         }
-        if (!title && !content) {
+
+        if (price !== undefined && (typeof price !== "number" || price < 0)) {
             return res.status(400).send({
-                message: "title 또는 content 중 하나는 있어야 합니다.",
+                message: "price는 0 이상의 숫자여야 합니다.",
             });
         }
 
-        const article = await prisma.article.update({
+        if (tags !== undefined && !Array.isArray(tags)) {
+            return res.status(400).send({
+                message: "tags는 배열이어야 합니다.",
+            });
+        }
+
+        const updateData = {};
+        if (name !== undefined) updateData.name = name;
+        if (description !== undefined) updateData.description = description;
+        if (price !== undefined) updateData.price = price;
+        if (tags !== undefined) updateData.tags = tags;
+
+        if (Object.keys(updateData).length === 0) {
+            return res.status(400).send({
+                message: "수정할 필드가 없습니다.",
+            });
+        }
+
+        const product = await prisma.product.update({
             where: { id },
-            data: {
-                ...(title && { title }),
-                ...(content && { content }),
-            },
+            data: updateData,
         });
 
-        res.send(article);
+        res.send(product);
     } catch (err) {
         // 없는 id 수정 시 P2025 날 수 있음
         if (err.code === "P2025") {
             return res
                 .status(404)
-                .send({ message: "게시글을 찾을 수 없습니다." });
+                .send({ message: "상품을 찾을 수 없습니다." });
         }
         next(err);
     }
 });
 
-/** 게시글 삭제 */
+/** 상품 삭제 */
 router.delete("/:id", async (req, res, next) => {
     try {
         const id = Number(req.params.id);
@@ -175,16 +202,17 @@ router.delete("/:id", async (req, res, next) => {
             return res.status(400).send({ message: "id는 숫자여야 합니다." });
         }
 
-        await prisma.article.delete({ where: { id } });
+        await prisma.product.delete({ where: { id } });
         return res.sendStatus(204); // 내용 없음
     } catch (err) {
         if (err.code === "P2025") {
             return res
                 .status(404)
-                .send({ message: "게시글을 찾을 수 없습니다." });
+                .send({ message: "상품을 찾을 수 없습니다." });
         }
         next(err);
     }
 });
 
 export default router;
+
